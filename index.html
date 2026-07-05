@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Frutiger Aero — Aurora 2.1 | 屈折するガラス、月と連動する反射</title>
+<title>ATMOS v0.1 — 大気光学系デザインシステム | Aurora / Rainbow</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&family=M+PLUS+Rounded+1c:wght@400;500;700&family=Share+Tech+Mono&family=EB+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Zen+Old+Mincho:wght@400;700&family=Mochiy+Pop+One&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
-   FRUTIGER AERO — AURORA 2.1
+   ATMOS v0.1 — AURORA / RAINBOW
    設定: 一年でいちばんオーロラが濃い夜。今夜だけの空。
    哲学: 「借りた光」— 月は太陽の光を反射しているだけ。
          このUIも、自ら光るのはCTAだけ。他はすべて反射。
@@ -17,6 +17,27 @@
    時間: スクロール = 深夜0時から夜明けへの運行。
    ============================================================ */
 :root{
+  /* ── DESIGN TOKENS v3.0 ───────────────────────────
+     spacing / radius / motion を正式なスケールとして定義。
+     コンポーネントはすべてこのトークンを参照する。
+     ────────────────────────────────────────────── */
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px;
+  --space-5:24px; --space-6:32px; --space-7:48px; --space-8:64px;
+
+  --radius-sm:10px;   /* 入力・プログレス */
+  --radius-md:17px;   /* トグル・ボタン */
+  --radius-lg:26px;   /* パネル(上) */
+  --radius-pane:30px 30px 22px 22px;
+  --radius-pane-in:26px 26px 18px 18px;
+
+  --duration-fast:.15s;   /* 押下フィードバック */
+  --duration-med:.4s;     /* hover遷移 */
+  --duration-slow:1.2s;   /* 呼吸系・出現 */
+  --breath:4s;            /* 世界の心拍。全アニメはこの倍数 */
+  --ease-out:cubic-bezier(.2,.6,.3,1);
+  --ease-spring:cubic-bezier(.34,1.6,.64,1);
+  --ease-contract:cubic-bezier(.55,0,.2,1); /* クラゲの収縮 */
+
   --night:      #030a14;
   --night-2:    #041224;
   --water:      #06263a;
@@ -55,6 +76,76 @@
   --r-pane: 30px 30px 22px 22px;
   --r-pane-in: 26px 26px 18px 18px;
   --r-ctrl: 15px;   /* コントロールの基準角。pillより角ばり、直角より柔らかい */
+
+  /* セマンティック・トークン(テーマ切替の対象) */
+  --pane-bg-top:rgba(20,40,60,.82);
+  --pane-bg-mid:rgba(9,22,38,.86);
+  --pane-bg-btm:rgba(4,12,22,.92);
+  --pane-line:rgba(143,216,255,.26);
+  --pane-line-in:rgba(143,216,255,.12);
+  --shadow-ambient:rgba(4,26,44,.92);
+  --shadow-tint:rgba(25,227,177,.13);
+}
+
+/* ============================================================
+   DAY THEME — 同じコンポーネント、同じトークン名、違う光。
+   「昼と夜はテーマが2つではなく、同じ風景の違う時刻」の実装的証明。
+   ============================================================ */
+[data-theme="day"]{
+  /* ── プリズムから導出した役割色 ─────────────────
+     虹は白色光が波長順(赤→紫)に分かれた姿。
+     昼のパレットは「役割に近い色を選ぶ」のではなく、
+     スペクトルの位置がそのまま役割になるよう設計し直した。
+     各色は可読性のための「深色(ink)」— 装飾用の淡い虹色は
+     別途 --spectrum-* に分離し、テキストには使わない。
+     ─────────────────────────────────────────── */
+  --night:      #aadcf5;
+  --night-2:    #cdeffc;
+  --water:      #f4fbff;
+
+  /* スペクトル・インク(役割色/AA検証済み) */
+  --teal:       #086b50;   /* 緑(波長中央)= 主役。夜のtealと同じ"中心"の役割を継ぐ */
+  --cyan:       #0a5ca8;   /* 青(短波長)= 副役・空 */
+  --violet:     #5a35a8;   /* 紫(最短波長)= 特別。装飾のみでなく実際に光学的に"端" */
+  --firefly:    #d9541f;   /* 赤(長波長)= 自家発光。プリズムの逆側の端をCTAに */
+  --jelly:      #1a7fc4;   /* フォーカスリング専用。cyanより明るく視認性を確保 */
+  --moonsilver: #6a7d88;   /* 反射色: 水滴の銀。夜のmoonsilverと役割対称 */
+  --text:       #0b4066;
+  --text-hi:    #062a4a;
+  --dim:        #336a8c;   /* AA 5.4:1 検証済み */
+
+  /* 装飾専用スペクトル(虹のアーチ・スウォッチにのみ使用、テキスト不可) */
+  --spectrum-red:#ff4d4d; --spectrum-orange:#ff9d2e; --spectrum-yellow:#ffe93d;
+  --spectrum-green:#2ecc71; --spectrum-blue:#2e86ff; --spectrum-violet:#7a4dff;
+
+  --pane-bg-top:rgba(255,255,255,.72);
+  --pane-bg-mid:rgba(255,255,255,.56);
+  --pane-bg-btm:rgba(240,250,255,.6);
+  --pane-line:rgba(255,255,255,.88);
+  --pane-line-in:rgba(255,255,255,.55);
+  --shadow-ambient:rgba(6,64,110,.32);
+  --shadow-tint:rgba(10,92,168,.12);
+}
+[data-theme="day"] body, body[data-theme="day"]{
+  background:linear-gradient(180deg,#8fd0f2 0%,#c8ecfc 45%,#e8f8ff 100%);
+}
+/* 夜専用の住人は昼には眠る */
+[data-theme="day"] #auroraLayer,[data-theme="day"] #moonLayer,
+[data-theme="day"] #starLayer,[data-theme="day"] #owl,
+[data-theme="day"] .jellywrap{display:none}
+/* 蛍は昼、泡になる(同じJS・同じ物理・違う姿) */
+[data-theme="day"] .ffly{
+  width:9px;height:9px;background:rgba(255,255,255,.4);
+  border:1px solid rgba(255,255,255,.8);
+  box-shadow:inset -2px -2px 4px rgba(120,180,220,.4), 0 2px 6px rgba(6,64,110,.15);
+  animation:none;opacity:.85}
+[data-theme="day"] h1{text-shadow:0 2px 14px rgba(6,64,110,.25)}
+[data-theme="day"] h1 b{background:linear-gradient(90deg,#1272c8,#0a86b4,#4d9e13);
+  -webkit-background-clip:text;background-clip:text}
+[data-theme="day"] .pane{
+  box-shadow:0 18px 40px -14px var(--shadow-ambient),
+    0 8px 22px -8px var(--shadow-tint),
+    inset 0 1.5px 0 rgba(255,255,255,.9);
 }
 
 /* スーパー楕円クリップ(superellipse n≈4 の近似パス, viewBox 0..100 で正規化) */
@@ -81,6 +172,7 @@ body{
   overflow-x:hidden;
   background:linear-gradient(180deg,var(--night) 0%,var(--night-2) 50%,var(--water) 100%);
   background-attachment:fixed;
+  transition:background var(--duration-slow) ease, color var(--duration-slow) ease;
 }
 
 /* ============================================================
@@ -207,11 +299,11 @@ body{
     radial-gradient(120% 90% at 90% 110%, rgba(122,108,240,.09) 0%, transparent 52%),
     radial-gradient(80% 60% at 50% 40%, rgba(53,196,240,.045) 0%, transparent 70%),
     /* ガラス基面: 上が明るく下が沈む縦グラデ */
-    linear-gradient(180deg,rgba(20,40,60,.82) 0%,rgba(9,22,38,.86) 42%,rgba(4,12,22,.92) 100%);
-  border:1px solid rgba(143,216,255,.26);
+    linear-gradient(180deg,var(--pane-bg-top) 0%,var(--pane-bg-mid) 42%,var(--pane-bg-btm) 100%);
+  border:1px solid var(--pane-line);
   box-shadow:
-    0 26px 56px -16px rgba(4,26,44,.92),         /* 落ち影(青緑がかった夜気) */
-    0 12px 32px -10px rgba(25,227,177,.13),      /* 色つき影 */
+    0 26px 56px -16px var(--shadow-ambient),     /* 落ち影(青緑がかった夜気) */
+    0 12px 32px -10px var(--shadow-tint),        /* 色つき影 */
     -1.5px 0 0 rgba(53,196,240,.16),             /* 色収差: シアン側 */
     1.5px 0 0 rgba(122,108,240,.15),             /* 色収差: マゼンタ側 */
     inset 0 1.5px 0 rgba(255,255,255,.4),        /* 上端リムライト(鋭い) */
@@ -438,7 +530,12 @@ h1 b{font-weight:600;font-style:italic;
 .orbs{display:flex;flex-wrap:wrap;gap:24px;justify-content:center}
 .oc{text-align:center;width:100px}
 .oc .o{width:54px;height:54px;margin:0 auto 10px;border-radius:50%;position:relative;
-  border:1px solid rgba(255,255,255,.38)}
+  border:1px solid rgba(255,255,255,.38);
+  background-image:
+    radial-gradient(circle at 40% 30%, rgba(255,255,255,.55), transparent 60%),
+    radial-gradient(circle at 65% 75%, rgba(0,0,0,.28), transparent 65%);
+  background-blend-mode:overlay,normal;
+}
 .oc .o::after{content:"";position:absolute;top:9%;left:20%;width:42%;height:28%;border-radius:50%;
   background:linear-gradient(180deg,rgba(255,255,255,.9),transparent)}
 .oc b{font-size:.76rem;display:block;color:var(--text);font-weight:500}
@@ -562,6 +659,250 @@ footer{position:relative;z-index:1;text-align:center;padding:22px;background:#02
   font-family:var(--font-data);font-size:10.5px;letter-spacing:.25em;color:var(--dim);
   font-variant-numeric:tabular-nums}
 
+
+
+
+/* ============================================================
+   RAINBOW MODE v3.1 — 「分けられた光」
+   設定: 雨上がりの、いちばん光が澄んだ昼。
+   規範: 白は無料、色は有料。彩度=光が水を通った証拠。
+   禁忌: 太陽は直視できない=光源は絶対に描かない。
+   ============================================================ */
+.night-only{display:initial}
+.day-only{display:none}
+[data-theme="day"] .night-only{display:none}
+[data-theme="day"] .day-only{display:initial}
+
+/* --- 昼の空(太陽は描かない。明るさだけがある) --- */
+#daySky{display:none;position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+[data-theme="day"] #daySky{display:block}
+#daySky .cloud{position:absolute;filter:blur(2px);opacity:.9;animation:clouddrift linear infinite}
+@keyframes clouddrift{from{transform:translateX(-20vw)}to{transform:translateX(120vw)}}
+/* 雨上がりの湿った空気(ごく薄い光の帯) */
+#daySky .airglow{position:absolute;inset:0;
+  background:radial-gradient(120% 60% at 78% -10%,rgba(255,255,255,.5) 0%,transparent 60%)}
+/* 色温度レイヤー(時刻でJSが色を変える) */
+#tempLayer{display:none;position:fixed;inset:0;z-index:0;pointer-events:none;
+  mix-blend-mode:soft-light;transition:background 4s ease}
+[data-theme="day"] #tempLayer{display:block}
+
+/* --- 錦鯉(解剖精度: 背びれ・胸びれ・尾の波動・目・緋斑) --- */
+.koiwrap{display:none;position:fixed;pointer-events:none;z-index:0;animation:koiswim linear infinite}
+[data-theme="day"] .koiwrap{display:block}
+@keyframes koiswim{from{transform:translateX(110vw)}to{transform:translateX(-40vw)}}
+.koi{animation:koiundulate calc(var(--breath)/2) ease-in-out infinite;transform-origin:30% 50%}
+@keyframes koiundulate{0%,100%{transform:skewX(0deg)}50%{transform:skewX(-3deg)}}
+.koi .tailfin{animation:tailwave calc(var(--breath)/4) ease-in-out infinite;transform-origin:0% 50%}
+@keyframes tailwave{0%,100%{transform:rotate(4deg)}50%{transform:rotate(-6deg)}}
+.koi .pect{animation:pectwave calc(var(--breath)/2) ease-in-out infinite;transform-origin:20% 0%}
+@keyframes pectwave{0%,100%{transform:rotate(0deg)}50%{transform:rotate(14deg)}}
+
+/* --- 燕(稀な来訪者。梟の昼の対) --- */
+#swallow{display:none;position:fixed;top:14%;left:-10vw;z-index:0;pointer-events:none;opacity:0}
+[data-theme="day"] #swallow{display:block}
+#swallow.flying{animation:swallowfly 5s cubic-bezier(.3,.1,.5,1) forwards}
+@keyframes swallowfly{
+  0%{opacity:0;transform:translate(0,0) rotate(6deg)}
+  6%{opacity:1}
+  40%{transform:translate(48vw,7vh) rotate(-4deg)}
+  70%{transform:translate(78vw,1vh) rotate(5deg)}
+  100%{opacity:0;transform:translate(120vw,5vh) rotate(-2deg)}
+}
+#swallow .wing{animation:wingbeat .5s ease-in-out infinite alternate;transform-origin:50% 80%}
+@keyframes wingbeat{from{transform:scaleY(1)}to{transform:scaleY(.55)}}
+
+/* --- 虹(一日に一度だけ架かる。夜の流れ星の対) --- */
+#rainbow{display:none;position:fixed;left:50%;bottom:-46vw;width:92vw;height:92vw;z-index:0;
+  transform:translateX(-50%);border-radius:50%;pointer-events:none;opacity:0;
+  background:transparent;
+  /* 値は --spectrum-red/orange/yellow/green/blue/violet と同一(color-mixは
+     非対応ブラウザでbox-shadow全体が無効化されるリスクがあるため確実なrgbaで固定) */
+  box-shadow:
+    0 0 0 7px rgba(255,77,77,.30), 0 0 0 14px rgba(255,157,46,.28),
+    0 0 0 21px rgba(255,233,61,.25), 0 0 0 28px rgba(46,204,113,.24),
+    0 0 0 35px rgba(46,134,255,.22), 0 0 0 42px rgba(122,77,255,.20);
+  filter:blur(3px);
+  transition:opacity 6s ease}
+[data-theme="day"] #rainbow{display:block}
+#rainbow.arch{opacity:1}
+
+/* --- 通り雨(サブストームの対。数秒だけ雨脚が戻る) --- */
+#rainlayer{display:none;position:fixed;inset:0;z-index:2;pointer-events:none;opacity:0;
+  background:repeating-linear-gradient(102deg,
+    transparent 0 7px, rgba(190,220,240,.34) 7px 8px, transparent 8px 18px);
+  transition:opacity 1.2s ease}
+[data-theme="day"] #rainlayer{display:block}
+#rainlayer.shower{opacity:.75;animation:rainfall .38s linear infinite}
+@keyframes rainfall{from{background-position:0 0}to{background-position:-14px 44px}}
+
+/* --- 水たまり(湖の昼の姿。雨上がりの空を映す) --- */
+[data-theme="day"] .lake{display:block !important;cursor:pointer;
+  background:linear-gradient(180deg,#bde4f5 0%,#8fc8e0 55%,#6aaac8 100%);
+  border-top:1px solid rgba(255,255,255,.85)}
+[data-theme="day"] .lake .refl{opacity:.55;filter:blur(10px)}
+[data-theme="day"] .lake .rr1{background:linear-gradient(100deg,transparent 8%,#ffffff 40%,#e8f6ff 60%,transparent 88%)}
+[data-theme="day"] .lake .rr2{background:linear-gradient(85deg,transparent 12%,#ffffff 45%,transparent 90%)}
+[data-theme="day"] .lake .moonr{display:none}
+[data-theme="day"] .lake .wave{background:linear-gradient(90deg,transparent,rgba(6,64,110,.22),transparent)}
+[data-theme="day"] .lake-cap{color:rgba(6,64,110,.55)}
+
+/* --- 翳り=異常(昼のエラー。唯一"光を遮る"存在) --- */
+[data-theme="day"] .inp.error{
+  border-color:#8a98a4;filter:grayscale(.55) brightness(.94);
+  box-shadow:0 10px 20px -8px rgba(50,62,72,.45)}
+[data-theme="day"] .field .err-msg{color:#5a6a76}
+[data-theme="day"] .field.has-error label{color:#5a6a76}
+[data-theme="day"] .steady{background:#8a98a4;
+  box-shadow:0 6px 14px -4px rgba(50,62,72,.55)}
+[data-theme="day"] .notif.err{border-color:rgba(110,124,136,.5)}
+[data-theme="day"] .notif.err .t{color:#5a6a76}
+
+/* --- hover=水滴が結ぶ(分光フリンジ) --- */
+[data-theme="day"] .reflect-btn:hover,[data-theme="day"] .reflect-btn.tap-fx{
+  box-shadow:
+    -2px 0 0 rgba(255,77,77,.25), 2px 0 0 rgba(122,77,255,.25),
+    0 10px 22px -8px var(--shadow-ambient)}
+[data-theme="day"] .reflect-btn .sheen{
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.7),transparent)}
+/* 昼の霜=水滴の滲み(白ではなく透明な濡れ) */
+[data-theme="day"] .reflect-btn:hover::after{
+  animation:wetbloom 1.4s ease}
+@keyframes wetbloom{
+  0%{box-shadow:inset 0 0 0 0 rgba(150,200,235,0)}
+  30%{box-shadow:inset 0 0 20px 3px rgba(150,200,235,.4)}
+  100%{box-shadow:inset 0 0 0 0 rgba(150,200,235,0)}
+}
+
+/* --- 昼のCTA=錦鯉の緋。sheen色も昼仕様 --- */
+[data-theme="day"] .cta-firefly{color:#4a2205;
+  background:radial-gradient(circle at 42% 35%,#ffe2c4 0%,var(--firefly) 55%,#c85207 100%);
+  border-color:rgba(255,235,210,.9);
+  box-shadow:0 0 22px rgba(255,122,46,.4),0 10px 24px -8px rgba(200,82,7,.35)}
+
+/* --- パネル影は太陽高度で向きが変わる(JSが--shadow-xを供給) --- */
+[data-theme="day"] .pane{
+  box-shadow:var(--shadow-x,0px) 18px 40px -14px var(--shadow-ambient),
+    0 8px 22px -8px var(--shadow-tint),
+    inset 0 1.5px 0 rgba(255,255,255,.9);
+}
+
+/* ============================================================
+   SECTION DOT NAV v3.0 — 右端の星座ナビ。現在地=光る星。
+   ============================================================ */
+.dotnav{position:fixed;right:14px;top:50%;transform:translateY(-50%);z-index:10;
+  display:flex;flex-direction:column;gap:14px;padding:10px 6px;
+  background:rgba(3,10,20,.35);border-radius:999px;backdrop-filter:blur(4px)}
+[data-theme="day"] .dotnav{background:rgba(255,255,255,.4)}
+.dotnav a{width:8px;height:8px;border-radius:50%;display:block;position:relative;
+  background:rgba(200,212,220,.28);transition:background var(--duration-med),box-shadow var(--duration-med),transform var(--duration-med)}
+.dotnav a:hover{transform:scale(1.4)}
+.dotnav a.active{background:var(--teal);box-shadow:0 0 8px var(--teal)}
+.dotnav a:focus-visible{outline:1px solid var(--teal);outline-offset:3px}
+.dotnav a .tip{position:absolute;right:18px;top:50%;transform:translateY(-50%);
+  font-family:var(--font-data);font-size:9.5px;letter-spacing:.1em;color:var(--text);
+  background:rgba(3,10,20,.85);padding:3px 9px;border-radius:6px;white-space:nowrap;
+  opacity:0;pointer-events:none;transition:opacity var(--duration-med)}
+[data-theme="day"] .dotnav a .tip{background:rgba(255,255,255,.92)}
+.dotnav a:hover .tip{opacity:1}
+@media (max-width:760px){.dotnav{display:none}}
+
+/* ============================================================
+   ENTRANCE v3.0 — パネルは視界に入ったとき水面から浮かび上がる
+   ============================================================ */
+.pane{opacity:0;transform:translateY(16px);
+  transition:opacity var(--duration-slow) var(--ease-out), transform var(--duration-slow) var(--ease-out),
+    border-color .6s, box-shadow .6s}
+.pane.in{opacity:1;transform:translateY(0)}
+@media (prefers-reduced-motion:reduce){.pane{opacity:1;transform:none}}
+
+/* ============================================================
+   THEME SWITCH v3.0 — 太陽と月のトグル(右上)
+   ============================================================ */
+/* ============================================================
+   THEME SWITCH v3.2 — 天体運行トグル。太陽と月が実際に入れ替わる
+   円窓。押すたびに公転し、星は瞬き、雲は流れる。
+   ============================================================ */
+.theme-toggle{
+  position:fixed;right:16px;top:16px;z-index:12;
+  width:52px;height:52px;padding:0;border:none;cursor:pointer;
+  border-radius:50%;background:transparent;
+  box-shadow:0 10px 24px -8px rgba(4,16,28,.6);
+  transition:transform var(--duration-med) var(--ease-spring);
+}
+.theme-toggle svg{width:100%;height:100%;display:block;overflow:visible}
+.tgl-backing{transition:fill var(--duration-slow)}
+.tgl-sky{fill:url(#toggleSkyNight);transition:opacity var(--duration-slow)}
+.tgl-ring{transition:stroke var(--duration-slow)}
+.theme-toggle:hover{transform:scale(1.07)}
+.theme-toggle:active{transform:scale(.94)}
+.theme-toggle:focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:50%}
+
+/* 星(夜のみ瞬く) */
+.tgl-stars circle{animation:tgltw 3s ease-in-out infinite;transform-origin:center;
+  transition:opacity var(--duration-med)}
+.tgl-stars circle:nth-child(2){animation-delay:.6s}
+.tgl-stars circle:nth-child(3){animation-delay:1.1s}
+.tgl-stars circle:nth-child(4){animation-delay:.3s}
+.tgl-stars circle:nth-child(5){animation-delay:1.6s}
+@keyframes tgltw{0%,100%{opacity:.9}50%{opacity:.25}}
+.tgl-cloud{opacity:0;transition:opacity var(--duration-slow)}
+.tgl-cloud ellipse{animation:tglcloud 9s ease-in-out infinite alternate}
+@keyframes tglcloud{from{transform:translateX(-2px)}to{transform:translateX(2px)}}
+
+/* 公転する天体: 月は見えている状態が基準、押すと180度回って太陽が表になる */
+.tgl-orbit{transform-origin:30px 30px;transition:transform .7s var(--ease-spring)}
+.tgl-moon{transition:opacity .35s ease}
+.tgl-moon-crater1,.tgl-moon-crater2{opacity:.5;transition:opacity .35s ease}
+.tgl-sun{opacity:0;transform-origin:30px 30px;transition:opacity .35s ease}
+.tgl-sun{filter:drop-shadow(0 0 4px rgba(255,244,200,.8))}
+
+/* ===== Rainbow(昼)状態: 天体が入れ替わる ===== */
+[data-theme="day"] .tgl-backing{fill:#eaf6ff}
+[data-theme="day"] .tgl-sky{fill:url(#toggleSkyDay)}
+[data-theme="day"] .tgl-ring{stroke:rgba(10,92,168,.4)}
+[data-theme="day"] .tgl-stars circle{opacity:0}
+[data-theme="day"] .tgl-cloud{opacity:1}
+[data-theme="day"] .tgl-orbit{transform:rotate(180deg)}
+[data-theme="day"] .tgl-moon,[data-theme="day"] .tgl-moon-crater1,[data-theme="day"] .tgl-moon-crater2{opacity:0}
+[data-theme="day"] .tgl-sun{opacity:1}
+/* 太陽自身は回転で逆さまにならないよう相殺 */
+[data-theme="day"] .tgl-sun{transform:rotate(-180deg)}
+
+
+/* ============================================================
+   COMPONENT STATES v3.0 — disabled / error / 空状態
+   ============================================================ */
+button:disabled,.lure-btn:disabled,.ghost-btn:disabled{
+  opacity:.38;cursor:not-allowed;animation:none !important;
+  box-shadow:none !important;transform:none !important;filter:saturate(.4)}
+.inp.error{border-color:rgba(216,64,64,.65);
+  box-shadow:0 0 12px -4px rgba(216,64,64,.5)}
+.field .err-msg{display:none;font-size:.72rem;color:#f0a8a8;
+  font-family:var(--font-data);letter-spacing:.06em}
+.field.has-error .err-msg{display:block}
+.field.has-error label{color:#f0a8a8}
+
+/* skip link (a11y) */
+.skip-link{position:fixed;left:8px;top:-60px;z-index:99;padding:10px 18px;
+  background:var(--teal);color:#03202a;border-radius:8px;font-weight:700;
+  transition:top .2s}
+.skip-link:focus{top:8px}
+
+/* ============================================================
+   TOUCH PARITY v3.0 — hoverが存在しない端末でも体験を等価に。
+   ・全ボタンに:activeの押下フィードバック(縮む=触った証拠)
+   ・sheen/frost/波紋はJSがpointerdownでも発火させる
+   ============================================================ */
+.ice-btn:active,.halo-btn:active,.reflect-btn:active,.calm-toggle:active .ctr{
+  transform:scale(.965);transition:transform var(--duration-fast)}
+.ghost-btn:active{transform:scale(.965)}
+@media (hover:none){
+  /* hover起点の演出をタップで発火した.tap-fxクラスに委譲 */
+  .reflect-btn.tap-fx .sheen{animation:sheen 1s ease}
+  .reflect-btn.tap-fx::after{animation:frost 1.4s ease}
+  header h1{letter-spacing:.11em} /* 呼吸は常時開いた状態に */
+}
+
 /* ============================================================
    オーロラ・サブストーム(ごく稀に激しく踊る数秒間)
    ============================================================ */
@@ -655,8 +996,52 @@ body.tab-hidden .refract-layer,body.tab-hidden .specular-layer,body.tab-hidden .
   </defs>
 </svg>
 
+<a class="skip-link" href="#sec-philosophy">コンテンツへスキップ</a>
 <canvas id="frost" aria-hidden="true"></canvas>
 <button class="mode-toggle" id="modeToggle" aria-pressed="false">⌘ REFERENCE MODE</button>
+<button class="theme-toggle" id="themeToggle" aria-label="Rainbow Mode(昼)に切り替える" aria-pressed="false">
+  <svg viewBox="0 0 60 60" aria-hidden="true">
+    <defs>
+      <clipPath id="toggleWin"><circle cx="30" cy="30" r="26"/></clipPath>
+      <linearGradient id="toggleSkyNight" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#0a1830"/><stop offset="1" stop-color="#030a14"/>
+      </linearGradient>
+      <linearGradient id="toggleSkyDay" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#8fd0f2"/><stop offset="1" stop-color="#e8f8ff"/>
+      </linearGradient>
+    </defs>
+    <circle cx="30" cy="30" r="27" fill="#04101c" class="tgl-backing"/>
+    <g clip-path="url(#toggleWin)">
+      <rect class="tgl-sky" x="3" y="3" width="54" height="54"/>
+      <g class="tgl-stars">
+        <circle cx="14" cy="13" r=".9" fill="#fff"/><circle cx="45" cy="11" r="1.1" fill="#fff"/>
+        <circle cx="49" cy="23" r=".8" fill="#fff"/><circle cx="9" cy="25" r=".8" fill="#fff"/>
+        <circle cx="20" cy="46" r=".7" fill="#fff"/>
+      </g>
+      <g class="tgl-cloud">
+        <ellipse cx="16" cy="45" rx="10" ry="3.8" fill="#fff"/>
+        <ellipse cx="42" cy="49" rx="7.5" ry="3" fill="#fff"/>
+      </g>
+      <g class="tgl-orbit">
+        <circle class="tgl-moon" cx="30" cy="30" r="10.5" fill="#e8f2fa"/>
+        <circle class="tgl-moon-crater1" cx="26" cy="26" r="1.7" fill="#c4d6e4"/>
+        <circle class="tgl-moon-crater2" cx="34" cy="33" r="1.1" fill="#c4d6e4"/>
+        <circle class="tgl-sun" cx="30" cy="30" r="9.5" fill="#fffef2"/>
+      </g>
+    </g>
+    <circle cx="30" cy="30" r="26" fill="none" stroke="rgba(200,212,220,.4)" stroke-width="1.4" class="tgl-ring"/>
+  </svg>
+</button>
+<nav class="dotnav" aria-label="セクション・ナビゲーション">
+  <a href="#sec-top" data-sec="sec-top"><span class="tip">Top</span></a>
+  <a href="#sec-philosophy" data-sec="sec-philosophy"><span class="tip">借りた光</span></a>
+  <a href="#sec-buttons" data-sec="sec-buttons"><span class="tip">Buttons</span></a>
+  <a href="#sec-palette" data-sec="sec-palette"><span class="tip">Palette</span></a>
+  <a href="#sec-ledger" data-sec="sec-ledger"><span class="tip">光子の家計簿</span></a>
+  <a href="#sec-glass" data-sec="sec-glass"><span class="tip">Glass</span></a>
+  <a href="#sec-controls" data-sec="sec-controls"><span class="tip">Controls</span></a>
+  <a href="#sec-lake" data-sec="sec-lake"><span class="tip">湖</span></a>
+</nav>
 
 <!-- ============ 空 ============ -->
 <div class="sky" aria-hidden="true">
@@ -729,6 +1114,67 @@ body.tab-hidden .refract-layer,body.tab-hidden .specular-layer,body.tab-hidden .
     </svg>
   </div></div>
   <div class="layer" id="flyLayer"></div>
+</div>
+
+
+<!-- ============ RAINBOW MODE: 昼の環境(太陽は描かない) ============ -->
+<div id="daySky" aria-hidden="true">
+  <div class="airglow"></div>
+  <svg class="cloud" style="top:9%;animation-duration:150s" width="190" height="80" viewBox="0 0 190 80">
+    <g fill="#ffffff"><circle cx="45" cy="48" r="27"/><circle cx="88" cy="35" r="36"/><circle cx="135" cy="48" r="25"/>
+    <rect x="22" y="44" width="140" height="30" rx="15"/></g>
+  </svg>
+  <svg class="cloud" style="top:22%;animation-duration:210s;animation-delay:-80s;transform:scale(.6)" width="190" height="80" viewBox="0 0 190 80">
+    <g fill="#ffffff" opacity=".85"><circle cx="45" cy="48" r="27"/><circle cx="88" cy="35" r="36"/><circle cx="135" cy="48" r="25"/>
+    <rect x="22" y="44" width="140" height="30" rx="15"/></g>
+  </svg>
+</div>
+<div id="tempLayer" aria-hidden="true"></div>
+<div id="rainlayer" aria-hidden="true"></div>
+<div id="rainbow" aria-hidden="true"></div>
+
+<!-- 錦鯉(解剖精度版: 緋斑・背びれ・胸びれ・尾の波動) -->
+<div class="koiwrap" style="top:30%;animation-duration:75s" aria-hidden="true">
+  <svg class="koi" width="150" height="64" viewBox="0 0 150 64">
+    <defs>
+      <linearGradient id="koibody" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#fff8f0"/><stop offset="1" stop-color="#f0e2d4"/>
+      </linearGradient>
+    </defs>
+    <g class="tailfin">
+      <path d="M18 32 L2 16 Q10 32 2 48 Z" fill="#ff9d5e" opacity=".85"/>
+    </g>
+    <ellipse cx="70" cy="32" rx="52" ry="19" fill="url(#koibody)"/>
+    <path d="M40 20 Q58 4 74 18 Q60 26 48 26 Z" fill="#ff7a2e" opacity=".9"/>
+    <path d="M88 38 Q104 30 112 40 Q100 48 90 46 Z" fill="#ff7a2e" opacity=".85"/>
+    <path d="M56 44 Q66 56 80 50 Q70 42 62 42 Z" fill="#e8552a" opacity=".7"/>
+    <path d="M60 13 Q70 2 84 12 L76 17 Z" fill="#f0d8c8" opacity=".9"/>
+    <g class="pect"><path d="M92 40 Q102 52 96 58 Q88 50 88 42 Z" fill="#f0d8c8" opacity=".85"/></g>
+    <ellipse cx="70" cy="24" rx="40" ry="7" fill="#ffffff" opacity=".55"/>
+    <circle cx="112" cy="28" r="4" fill="#fff"/><circle cx="113" cy="28" r="2.2" fill="#2a1a10"/>
+  </svg>
+</div>
+<div class="koiwrap" style="top:58%;animation-duration:110s;animation-delay:-50s;transform:scale(.6)" aria-hidden="true">
+  <svg class="koi" width="150" height="64" viewBox="0 0 150 64">
+    <g class="tailfin"><path d="M18 32 L2 16 Q10 32 2 48 Z" fill="#8fb8d0" opacity=".85"/></g>
+    <ellipse cx="70" cy="32" rx="52" ry="19" fill="url(#koibody)"/>
+    <path d="M44 22 Q64 8 82 20 Q64 30 52 28 Z" fill="#2a4a68" opacity=".8"/>
+    <path d="M90 40 Q104 34 110 42 Q98 48 92 46 Z" fill="#2a4a68" opacity=".7"/>
+    <g class="pect"><path d="M92 40 Q102 52 96 58 Q88 50 88 42 Z" fill="#e2ecf4" opacity=".85"/></g>
+    <ellipse cx="70" cy="24" rx="40" ry="7" fill="#ffffff" opacity=".55"/>
+    <circle cx="112" cy="28" r="4" fill="#fff"/><circle cx="113" cy="28" r="2.2" fill="#1a2a3a"/>
+  </svg>
+</div>
+
+<!-- 燕(稀な来訪者) -->
+<div id="swallow" aria-hidden="true">
+  <svg width="66" height="40" viewBox="0 0 66 40">
+    <path d="M30 20 Q40 14 52 18 L64 14 L56 22 L64 30 L52 24 Q40 28 30 24 Z" fill="#1e2e3c"/>
+    <g class="wing"><path d="M30 20 Q18 2 2 6 Q16 16 28 22 Z" fill="#1e2e3c"/></g>
+    <path d="M30 22 Q20 34 8 36 Q20 28 28 24 Z" fill="#2a3e50"/>
+    <circle cx="48" cy="19" r="1.6" fill="#e8f4fa"/>
+    <path d="M52 16 Q50 12 46 12 Q50 15 51 17 Z" fill="#c85a3a"/>
+  </svg>
 </div>
 
 <!-- ============ 梟(この森に1羽) ============ -->
@@ -830,11 +1276,11 @@ body.tab-hidden .refract-layer,body.tab-hidden .specular-layer,body.tab-hidden .
  </div>
 </div>
 
-<div class="wrap">
+<main class="wrap">
 
-<header>
-  <p class="tonight">— 一年でいちばんオーロラが濃い夜 —</p>
-  <h1>Frutiger Aero <b>Aurora 2.1</b></h1>
+<header id="sec-top">
+  <p class="tonight"><span class="night-only">— 一年でいちばんオーロラが濃い夜 —</span><span class="day-only">— 雨上がりの、いちばん光が澄んだ昼 —</span></p>
+  <h1>ATMOS <b><span class="night-only">Aurora</span><span class="day-only">Rainbow</span></b></h1>
   <svg class="constellation" width="300" height="34" viewBox="0 0 300 34" aria-hidden="true">
     <line x1="18" y1="22" x2="70" y2="10"/><line x1="70" y1="10" x2="128" y2="24"/>
     <line x1="128" y1="24" x2="176" y2="8"/><line x1="176" y1="8" x2="232" y2="18"/>
@@ -844,17 +1290,19 @@ body.tab-hidden .refract-layer,body.tab-hidden .specular-layer,body.tab-hidden .
     <circle cx="232" cy="18" r="2"/><circle cx="282" cy="12" r="2.4"/>
   </svg>
   <p class="hero-sub">
-    月は、自分では光らない。太陽の光を反射しているだけ。<br>
+    <span class="night-only">月は、自分では光らない。太陽の光を反射しているだけ。<br>
     このUIも同じ — <em>自ら光るのはCTAだけ。ほかはすべて、借りた光。</em><br>
-    スクロールすると夜が更けます。
+    スクロールすると夜が更けます。</span><span class="day-only">白色光は、すべての色を含んでいる。水を通ったときだけ、色が現れる。<br>
+    このUIも同じ — <em>色が付いている場所は、光が水を通った証拠。</em><br>
+    太陽は描かない。影ときらめきと虹が、その証拠。</span>
   </p>
-  <p class="moon-age" id="moonAge">MOON AGE — 計算中…</p>
+  <p class="moon-age"><span class="night-only" id="moonAge">MOON AGE — 計算中…</span><span class="day-only" id="sunInfo">SUN ALT — 計算中…</span></p>
 </header>
 
 <!-- ============ 借りた光 ============ -->
-<div class="pane">
+<div class="pane" id="sec-philosophy">
   <div class="panel">
-    <span class="sec-label"><span class="node"></span><span class="line"></span>Borrowed Light — 借りた光</span>
+    <h2 class="sec-label"><span class="node"></span><span class="line"></span>Borrowed Light — 借りた光</h2>
     <div class="philosophy">
       <div class="phi">
         <span class="rule">RULE 01</span>
@@ -876,9 +1324,9 @@ body.tab-hidden .refract-layer,body.tab-hidden .specular-layer,body.tab-hidden .
 </div>
 
 <!-- ============ ボタン 2.0 ============ -->
-<div class="pane">
+<div class="pane" id="sec-buttons">
   <div class="panel">
-    <span class="sec-label"><span class="node"></span><span class="line"></span>Buttons 2.0 — 氷と月暈と蛍</span>
+    <h2 class="sec-label"><span class="node"></span><span class="line"></span>Buttons 2.0 — 氷と月暈と蛍</h2>
     <div class="row" style="margin-bottom:26px">
       <button class="cta-firefly">今夜をはじめる</button>
       <span class="btn-note">← 蛍型CTA。尾に発光器。唯一の自家発光</span>
@@ -898,28 +1346,43 @@ body.tab-hidden .refract-layer,body.tab-hidden .specular-layer,body.tab-hidden .
 </div>
 
 <!-- ============ カラー ============ -->
-<div class="pane">
+<div class="pane" id="sec-palette">
   <div class="panel">
-    <span class="sec-label"><span class="node"></span><span class="line"></span>Palette — 7色目は月光</span>
+    <h2 class="sec-label"><span class="node"></span><span class="line"></span>Palette — <span class="night-only">7色目は月光</span><span class="day-only">スペクトルは太陽の分身</span></h2>
     <div class="orbs">
-      <div class="oc"><div class="o" style="background:radial-gradient(circle at 40% 30%,#7af0d0,#0a6a50);box-shadow:0 0 20px rgba(25,227,177,.55)"></div><b>Aurora Teal</b><code>#19E3B1</code></div>
-      <div class="oc"><div class="o" style="background:radial-gradient(circle at 40% 30%,#a8e4fa,#0a5a8c);box-shadow:0 0 20px rgba(53,196,240,.55)"></div><b>Aurora Cyan</b><code>#35C4F0</code></div>
-      <div class="oc"><div class="o" style="background:radial-gradient(circle at 40% 30%,#c4baff,#3a2a9e);box-shadow:0 0 20px rgba(122,108,240,.5)"></div><b>Violet</b><code>#7A6CF0</code></div>
-      <div class="oc"><div class="o" style="background:radial-gradient(circle at 40% 30%,#fff6c8,#a87c08);box-shadow:0 0 20px rgba(255,233,138,.5)"></div><b>Firefly</b><code>#FFE98A</code></div>
-      <div class="oc"><div class="o" style="background:radial-gradient(circle at 40% 30%,#dff4ff,#2a6a9e);box-shadow:0 0 20px rgba(143,216,255,.5)"></div><b>Jelly</b><code>#8FD8FF</code></div>
-      <div class="oc"><div class="o" style="background:radial-gradient(circle at 40% 30%,#f4f8fa,#5a7285);box-shadow:0 0 18px rgba(200,212,220,.45)"></div><b>Moonsilver</b><code>#C8D4DC</code></div>
-      <div class="oc"><div class="o" style="background:radial-gradient(circle at 40% 30%,#14304a,#030a14)"></div><b>Night</b><code>#030A14</code></div>
+      <div class="oc"><div class="o" style="background-color:var(--teal);box-shadow:0 0 20px var(--teal)"></div>
+        <b class="night-only">Aurora Teal</b><b class="day-only">Spectrum Green</b>
+        <code class="night-only">#19E3B1</code><code class="day-only">#086B50</code></div>
+      <div class="oc"><div class="o" style="background-color:var(--cyan);box-shadow:0 0 20px var(--cyan)"></div>
+        <b class="night-only">Aurora Cyan</b><b class="day-only">Spectrum Blue</b>
+        <code class="night-only">#35C4F0</code><code class="day-only">#0A5CA8</code></div>
+      <div class="oc"><div class="o" style="background-color:var(--violet);box-shadow:0 0 20px var(--violet)"></div>
+        <b class="night-only">Aurora Violet</b><b class="day-only">Spectrum Violet</b>
+        <code class="night-only">#7A6CF0</code><code class="day-only">#5A35A8</code></div>
+      <div class="oc"><div class="o" style="background-color:var(--firefly);box-shadow:0 0 20px var(--firefly)"></div>
+        <b class="night-only">Firefly</b><b class="day-only">Koi Red</b>
+        <code class="night-only">#FFE98A</code><code class="day-only">#D9541F</code></div>
+      <div class="oc"><div class="o" style="background-color:var(--jelly);box-shadow:0 0 20px var(--jelly)"></div>
+        <b class="night-only">Jelly</b><b class="day-only">Bubble Blue</b>
+        <code class="night-only">#8FD8FF</code><code class="day-only">#1A7FC4</code></div>
+      <div class="oc"><div class="o" style="background-color:var(--moonsilver);box-shadow:0 0 18px var(--moonsilver)"></div>
+        <b class="night-only">Moonsilver</b><b class="day-only">Dewsilver</b>
+        <code class="night-only">#C8D4DC</code><code class="day-only">#6A7D88</code></div>
+      <div class="oc"><div class="o" style="background-color:var(--night)"></div>
+        <b class="night-only">Night</b><b class="day-only">Noon</b>
+        <code class="night-only">#030A14</code><code class="day-only">#AADCF5</code></div>
     </div>
     <p style="margin-top:18px;font-size:.8rem;color:var(--dim);text-align:center">
-      Moonsilverは「反射の色」。hover・フォーカス・二次的な光は全部この銀。発光3色との使い分けが2.0の核。
+      <span class="night-only">Moonsilverは「反射の色」。hover・フォーカス・二次的な光は全部この銀。発光3色との使い分けが2.0の核。</span>
+      <span class="day-only">Dewsilverは「水滴の反射」。Aurora接頭辞はSpectrumに、生き物の名は対になる昼の生き物に置き換わる — 蛍→錦鯉、クラゲ→泡。</span>
     </p>
   </div>
 </div>
 
 <!-- ============ 光子の家計簿(発光経済との統合) ============ -->
-<div class="pane">
+<div class="pane" id="sec-ledger">
   <div class="panel">
-    <span class="sec-label"><span class="node"></span><span class="line"></span>Photon Ledger — 月光予算</span>
+    <h2 class="sec-label"><span class="node"></span><span class="line"></span>Photon Ledger — 月光予算</h2>
     <div class="ledger" id="ledger">
       <div class="li"><span class="who">蛍 ×6(呼吸)</span><span class="cost" id="lg-fly">18 ph/s</span><span class="why">近づくほど僅かに支出が増える</span></div>
       <div class="li"><span class="who">月クラゲ(脈動)</span><span class="cost">9 ph/s</span><span class="why">常時。生き物の基礎代謝</span></div>
@@ -927,6 +1390,12 @@ body.tab-hidden .refract-layer,body.tab-hidden .specular-layer,body.tab-hidden .
       <div class="li"><span class="who">オーロラ(平常)</span><span class="cost" id="lg-aurora">6 ph/s</span><span class="why">サブストーム発生時は一時的に急騰</span></div>
       <div class="li"><span class="who">梟の来訪</span><span class="cost" id="lg-owl">0 ph/s</span><span class="why">滞在中だけ、緑の瞳がわずかに支出</span></div>
       <div class="li total"><span class="who">TOTAL</span><span class="cost" id="lg-total">47 ph/s</span><span class="why">上限96。静寂モードで支出を止められる</span></div>
+    </div>
+    <p class="day-only" style="margin-top:12px;font-size:.8rem;color:var(--dim);line-height:1.8">
+      昼の通貨は<b style="color:var(--teal)">彩度</b>。白色光は無料、色は光が水を通った証拠として課金される。
+      Rainbow Modeではこの家計簿は「色の家計簿」として読む — 支出項目は同じ、通貨だけが変わる。
+    </p>
+    <div style="display:none">
     </div>
     <div class="row" style="margin-top:20px">
       <label class="calm-toggle">
@@ -940,12 +1409,12 @@ body.tab-hidden .refract-layer,body.tab-hidden .specular-layer,body.tab-hidden .
 </div>
 
 <!-- ============ ガラス2.0の解説 ============ -->
-<div class="pane pane-refractive">
+<div class="pane pane-refractive" id="sec-glass">
   <div class="refract-layer" aria-hidden="true"></div>
   <div class="specular-layer" aria-hidden="true"><svg viewBox="0 0 400 260" preserveAspectRatio="none"><rect x="2" y="2" width="396" height="256" rx="24" fill="#dff4ff" filter="url(#lensSpecular)"/></svg></div>
   <div class="frostmicro-layer" aria-hidden="true"></div>
   <div class="panel">
-    <span class="sec-label"><span class="node"></span><span class="line"></span>Glass 2.1 — このパネル自体が見本(屈折+月と連動する反射)</span>
+    <h2 class="sec-label"><span class="node"></span><span class="line"></span>Glass 2.1 — このパネル自体が見本(屈折+月と連動する反射)</h2>
     <div class="philosophy">
       <div class="phi"><span class="rule">EDGE</span><h3>色収差</h3>
         <p>パネル左縁にシアン、右縁にバイオレットの1.5pxが滲む。厚みのあるガラスの縁で光が分光する現象。</p></div>
@@ -960,9 +1429,9 @@ body.tab-hidden .refract-layer,body.tab-hidden .specular-layer,body.tab-hidden .
 </div>
 
 <!-- ============ コントロール ============ -->
-<div class="pane">
+<div class="pane" id="sec-controls">
   <div class="panel">
-    <span class="sec-label"><span class="node"></span><span class="line"></span>Controls</span>
+    <h2 class="sec-label"><span class="node"></span><span class="line"></span>Controls</h2>
     <div class="row" style="margin-bottom:24px">
       <label class="toggle"><input type="checkbox" checked><span class="tr"></span></label>
       <label class="toggle"><input type="checkbox"><span class="tr"></span></label>
@@ -974,13 +1443,23 @@ body.tab-hidden .refract-layer,body.tab-hidden .specular-layer,body.tab-hidden .
       <div class="field"><label for="f2">今夜の座標</label>
         <input class="inp" id="f2" type="text" style="font-family:var(--font-data);font-variant-numeric:tabular-nums;letter-spacing:.04em" placeholder="43.06°N, 141.35°E"></div>
     </div>
+    <div class="row" style="margin-top:24px">
+      <button class="cta-firefly" disabled>眠っている発光</button>
+      <button class="ghost-btn" disabled>眠っている反射</button>
+      <div class="field has-error" style="max-width:240px">
+        <label for="f3">観測者コード</label>
+        <input class="inp error" id="f3" type="text" value="OBS-✕✕✕✕" aria-invalid="true" aria-describedby="f3err">
+        <span class="err-msg" id="f3err">▲ 常灯=異常。この形式は登録されていません</span>
+      </div>
+      <span class="btn-note">← 状態の網羅: disabled(光る資格の一時停止)と error(唯一の常灯)</span>
+    </div>
   </div>
 </div>
 
-</div><!-- /wrap -->
+</main><!-- /wrap -->
 
 <!-- ============ 湖 ============ -->
-<div class="lake" aria-hidden="true">
+<div class="lake" id="sec-lake" aria-hidden="true">
   <div class="refl">
     <div class="rib rr1" style="filter:none"></div>
     <div class="rib rr2" style="filter:none"></div>
@@ -993,7 +1472,10 @@ body.tab-hidden .refract-layer,body.tab-hidden .specular-layer,body.tab-hidden .
   <p class="lake-cap">THE SKY, BORROWED BY THE LAKE</p>
 </div>
 
-<footer>FRUTIGER AERO — AURORA 2.1 / すべての光は、誰かからの借りもの</footer>
+<footer>
+  ATMOS v0.1 — AURORA / RAINBOW · 自家発光は、太陽ただひとつ。
+  <button id="tokenExport" style="display:block;margin:14px auto 0;font-family:var(--font-data);font-size:10.5px;letter-spacing:.12em;color:var(--teal);background:transparent;border:1px solid var(--pane-line);border-radius:999px;padding:8px 18px;cursor:pointer">⇩ DESIGN TOKENS (JSON)</button>
+</footer>
 
 <script>
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1277,6 +1759,23 @@ let tiltTimer = setTimeout(tiltLoop, 220);
 
   function addFrostPass(){
     if(reduced || document.hidden){ return; }
+    const isDay = document.documentElement.getAttribute('data-theme') === 'day';
+    if(isDay){
+      /* 昼: 水滴が数粒ずつ結ぶ(雨上がりの窓)。水滴はハイライト付きの粒 */
+      for(let i=0;i<3;i++){
+        const x = Math.random()*cv.width, y = Math.random()*cv.height;
+        const r = 2 + Math.random()*5;
+        cx.save();
+        cx.globalCompositeOperation = 'source-over';
+        cx.globalAlpha = .5;
+        cx.beginPath(); cx.arc(x,y,r,0,7);
+        cx.fillStyle = 'rgba(190,225,245,.5)'; cx.fill();
+        cx.beginPath(); cx.arc(x-r*.3,y-r*.35,r*.32,0,7);
+        cx.fillStyle = 'rgba(255,255,255,.85)'; cx.fill();
+        cx.restore();
+      }
+      return;
+    }
     if(ticks >= MAX_TICKS) return;
     ticks++;
     const w = cv.width, h = cv.height;
@@ -1321,6 +1820,181 @@ document.addEventListener('visibilitychange', ()=>{
   if(document.hidden){ stopFly(); }
   else{ startFly(); }
 });
+
+
+
+/* ============================================================
+   RAINBOW MODE v3.1 — 太陽高度(実時刻)/ 虹 / 通り雨 / 燕
+   太陽は描かない。証拠(影の向き・色温度・虹)だけを描く。
+   ============================================================ */
+const tempLayer = document.getElementById('tempLayer');
+const sunInfo = document.getElementById('sunInfo');
+
+function updateSun(){
+  const now = new Date();
+  const h = now.getHours() + now.getMinutes()/60;
+  /* 簡易太陽高度: 6時日出/18時日没の正弦近似 */
+  const alt = Math.sin((h - 6) / 12 * Math.PI); /* -1..1, 正午=1 */
+  const altDeg = Math.round(alt * 60);
+  /* 色温度: 朝=琥珀 / 正午=白 / 夕=橙 / 夜間にRainbowを見たら残照 */
+  let tint, phase;
+  if(alt <= 0){ tint = 'rgba(90,110,160,.35)'; phase = '日没後(残照)'; }
+  else if(h < 9){ tint = 'rgba(255,200,120,.3)'; phase = '朝(琥珀の光)'; }
+  else if(h < 15){ tint = 'rgba(255,255,255,.12)'; phase = '正午(白色光)'; }
+  else { tint = 'rgba(255,160,90,.32)'; phase = '夕(橙の光)'; }
+  if(tempLayer) tempLayer.style.background = tint;
+  /* 影の向き: 午前=影は左へ(+x) / 午後=右へ(-x) */
+  const shadowX = Math.round(-Math.cos((h - 6) / 12 * Math.PI) * 14);
+  document.documentElement.style.setProperty('--shadow-x', shadowX + 'px');
+  if(sunInfo){
+    sunInfo.textContent = `SUN ALT — 太陽高度 ${altDeg > 0 ? '+' : ''}${altDeg}° / ${phase} / 影の向き ${shadowX > 0 ? '←' : shadowX < 0 ? '→' : '真下'}`;
+  }
+}
+updateSun();
+setInterval(updateSun, 60000);
+
+/* --- 虹: 一日(セッション)に一度だけ、Rainbow Mode滞在中に架かる --- */
+let rainbowShown = false;
+function tryRainbow(){
+  if(rainbowShown || reduced) return;
+  if(document.documentElement.getAttribute('data-theme') !== 'day') return;
+  rainbowShown = true;
+  const rb = document.getElementById('rainbow');
+  rb.classList.add('arch');
+  setTimeout(()=>rb.classList.remove('arch'), 14000);
+}
+
+/* --- 通り雨: サブストームの昼版(数秒だけ雨脚が戻る) --- */
+function shower(){
+  if(document.documentElement.getAttribute('data-theme') === 'day' && !reduced){
+    const rl = document.getElementById('rainlayer');
+    rl.classList.add('shower');
+    setTimeout(()=>{
+      rl.classList.remove('shower');
+      /* 雨上がり=虹のチャンス */
+      setTimeout(tryRainbow, 2500);
+    }, 3800);
+  }
+  setTimeout(shower, 50000 + Math.random()*50000);
+}
+if(!reduced) setTimeout(shower, 18000 + Math.random()*14000);
+
+/* --- 燕: 稀に横切る(梟の昼の対) --- */
+function swallowVisit(){
+  if(document.documentElement.getAttribute('data-theme') === 'day' && !reduced){
+    const sw = document.getElementById('swallow');
+    sw.classList.remove('flying'); void sw.offsetWidth; sw.classList.add('flying');
+  }
+  setTimeout(swallowVisit, 30000 + Math.random()*30000);
+}
+if(!reduced) setTimeout(swallowVisit, 12000 + Math.random()*10000);
+
+/* ============================================================
+   v3.0 — テーマ切替(昼/夜のライブスイッチ)
+   ============================================================ */
+const themeToggle = document.getElementById('themeToggle');
+if(themeToggle){
+  themeToggle.addEventListener('click', ()=>{
+    const day = document.documentElement.getAttribute('data-theme') === 'day';
+    if(day){
+      document.documentElement.removeAttribute('data-theme');
+      themeToggle.setAttribute('aria-pressed','false');
+      themeToggle.setAttribute('aria-label','Rainbow Mode(昼)に切り替える');
+    }else{
+      document.documentElement.setAttribute('data-theme','day');
+      themeToggle.setAttribute('aria-pressed','true');
+      themeToggle.setAttribute('aria-label','Aurora Mode(夜)に切り替える');
+      updateSun();
+      /* Rainbow入場から45秒後、まだなら虹のチャンス */
+      setTimeout(tryRainbow, 45000);
+    }
+  });
+}
+
+/* ============================================================
+   v3.0 — セクション・ドット・ナビ(現在地追従)
+   ============================================================ */
+(function dotNav(){
+  const links = Array.from(document.querySelectorAll('.dotnav a'));
+  if(!links.length || !('IntersectionObserver' in window)) return;
+  const map = new Map();
+  links.forEach(l=>{
+    const sec = document.getElementById(l.dataset.sec);
+    if(sec) map.set(sec, l);
+  });
+  const io = new IntersectionObserver(entries=>{
+    entries.forEach(en=>{
+      if(en.isIntersecting){
+        links.forEach(l=>l.classList.remove('active'));
+        const link = map.get(en.target);
+        if(link) link.classList.add('active');
+      }
+    });
+  }, {rootMargin:'-40% 0px -50% 0px'});
+  map.forEach((_,sec)=>io.observe(sec));
+})();
+
+/* ============================================================
+   v3.0 — パネルの出現(視界に入ったら浮かび上がる)
+   ============================================================ */
+(function entrance(){
+  const panes = Array.from(document.querySelectorAll('.pane'));
+  if(!('IntersectionObserver' in window) || reduced){
+    panes.forEach(p=>p.classList.add('in')); return;
+  }
+  const io = new IntersectionObserver(entries=>{
+    entries.forEach(en=>{
+      if(en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); }
+    });
+  }, {rootMargin:'0px 0px -8% 0px', threshold:.08});
+  panes.forEach(p=>io.observe(p));
+})();
+
+/* ============================================================
+   v3.0 — タッチ・パリティ(hoverの演出をタップでも発火)
+   ============================================================ */
+(function touchParity(){
+  const coarse = matchMedia('(hover: none)').matches;
+  if(!coarse) return;
+  document.querySelectorAll('.reflect-btn').forEach(b=>{
+    b.addEventListener('pointerdown', ()=>{
+      b.classList.remove('tap-fx'); void b.offsetWidth; b.classList.add('tap-fx');
+      /* 波紋も同時に */
+      if(b.classList.contains('ripple-host')){
+        b.classList.remove('fired'); void b.offsetWidth; b.classList.add('fired');
+      }
+    });
+  });
+})();
+
+/* ============================================================
+   v3.0 — デザイントークンの書き出し(JSON)
+   ============================================================ */
+(function tokenExport(){
+  const btn = document.getElementById('tokenExport');
+  if(!btn) return;
+  const TOKEN_NAMES = [
+    '--space-1','--space-2','--space-3','--space-4','--space-5','--space-6','--space-7','--space-8',
+    '--radius-sm','--radius-md','--radius-lg',
+    '--duration-fast','--duration-med','--duration-slow','--breath',
+    '--ease-out','--ease-spring','--ease-contract',
+    '--night','--night-2','--water','--teal','--cyan','--violet','--firefly','--jelly','--moonsilver','--text','--text-hi','--dim',
+    '--font-head','--font-cta','--font-data','--font-b','--font-d',
+  ];
+  btn.addEventListener('click', ()=>{
+    const cs = getComputedStyle(document.documentElement);
+    const theme = document.documentElement.getAttribute('data-theme') || 'night';
+    const tokens = {};
+    TOKEN_NAMES.forEach(n=>{ tokens[n.replace('--','')] = cs.getPropertyValue(n).trim(); });
+    const payload = { system:'ATMOS', version:'0.1.0', theme: theme === 'day' ? 'rainbow' : 'aurora', tokens };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `aurora-tokens-${theme}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+})();
 
 /* ============ 開発者リファレンス・モード ============ */
 const modeToggle = document.getElementById('modeToggle');
