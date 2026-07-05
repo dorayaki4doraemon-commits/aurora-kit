@@ -745,6 +745,9 @@ footer{position:relative;z-index:1;text-align:center;padding:22px;background:#02
 /* --- 錦鯉(解剖精度: 背びれ・胸びれ・尾の波動・目・緋斑) --- */
 .koiwrap{display:none;position:fixed;pointer-events:none;z-index:0;animation:koiswim linear infinite}
 [data-theme="day"] .koiwrap{display:block}
+/* koiswimは右→左に進むが、SVG内の頭部は右側にあるため、そのままだと尾が先頭になる。
+   水平反転で頭を進行方向(左)へ向ける */
+.koi-flip{display:inline-block;transform:scaleX(-1)}
 @keyframes koiswim{from{transform:translateX(110vw)}to{transform:translateX(-40vw)}}
 .koi{animation:koiundulate calc(var(--breath)/2) ease-in-out infinite;transform-origin:30% 50%}
 @keyframes koiundulate{0%,100%{transform:skewX(0deg)}50%{transform:skewX(-3deg)}}
@@ -1009,11 +1012,6 @@ body.substorm #auroraLayer .rib{
 }
 
 /* ============================================================
-   窓霜(滞在で育ち、なぞると拭える)
-   ============================================================ */
-#frost{position:fixed;inset:0;z-index:8;pointer-events:none;mix-blend-mode:screen}
-
-/* ============================================================
    開発者リファレンス・モード(乾いたコンポーネント一覧へ切替)
    ============================================================ */
 .mode-toggle{
@@ -1082,7 +1080,6 @@ body.tab-hidden .refract-layer,body.tab-hidden .specular-layer,body.tab-hidden .
 </svg>
 
 <a class="skip-link" href="#sec-philosophy">コンテンツへスキップ</a>
-<canvas id="frost" aria-hidden="true"></canvas>
 <button class="mode-toggle" id="modeToggle" aria-pressed="false">⌘ REFERENCE MODE</button>
 <button class="theme-toggle" id="themeToggle" aria-label="Rainbow Mode(昼)に切り替える" aria-pressed="false">
   <svg viewBox="0 0 60 60" aria-hidden="true">
@@ -1222,6 +1219,7 @@ body.tab-hidden .refract-layer,body.tab-hidden .specular-layer,body.tab-hidden .
 
 <!-- 錦鯉(解剖精度版: 緋斑・背びれ・胸びれ・尾の波動) -->
 <div class="koiwrap" style="top:30%;animation-duration:75s" aria-hidden="true">
+ <div class="koi-flip">
   <svg class="koi" width="150" height="64" viewBox="0 0 150 64">
     <defs>
       <linearGradient id="koibody" x1="0" y1="0" x2="0" y2="1">
@@ -1240,8 +1238,10 @@ body.tab-hidden .refract-layer,body.tab-hidden .specular-layer,body.tab-hidden .
     <ellipse cx="70" cy="24" rx="40" ry="7" fill="#ffffff" opacity=".55"/>
     <circle cx="112" cy="28" r="4" fill="#fff"/><circle cx="113" cy="28" r="2.2" fill="#2a1a10"/>
   </svg>
+ </div>
 </div>
-<div class="koiwrap" style="top:58%;animation-duration:110s;animation-delay:-50s;transform:scale(.6)" aria-hidden="true">
+<div class="koiwrap" style="top:58%;animation-duration:110s;animation-delay:-50s" aria-hidden="true">
+ <div class="koi-flip" style="transform:scaleX(-1) scale(.6)">
   <svg class="koi" width="150" height="64" viewBox="0 0 150 64">
     <g class="tailfin"><path d="M18 32 L2 16 Q10 32 2 48 Z" fill="#8fb8d0" opacity=".85"/></g>
     <ellipse cx="70" cy="32" rx="52" ry="19" fill="url(#koibody)"/>
@@ -1251,6 +1251,7 @@ body.tab-hidden .refract-layer,body.tab-hidden .specular-layer,body.tab-hidden .
     <ellipse cx="70" cy="24" rx="40" ry="7" fill="#ffffff" opacity=".55"/>
     <circle cx="112" cy="28" r="4" fill="#fff"/><circle cx="113" cy="28" r="2.2" fill="#1a2a3a"/>
   </svg>
+ </div>
 </div>
 
 <!-- 燕(稀な来訪者) -->
@@ -1978,77 +1979,6 @@ function tiltLoop(){
   tiltTimer = setTimeout(tiltLoop, 220);
 }
 let tiltTimer = setTimeout(tiltLoop, 220);
-
-/* ============ 窓霜(滞在で育ち、なぞると拭える) ============ */
-(function frostSystem(){
-  const cv = document.getElementById('frost');
-  const cx = cv.getContext('2d');
-  let frostAlpha = 0;
-  const MAX_TICKS = 22, TICK_MS = 2600, TICK_ALPHA = 0.035;
-  let ticks = 0;
-  function resize(){ cv.width = innerWidth; cv.height = innerHeight; drawBase(); }
-  function drawBase(){
-    /* 既存のwipe跡は保持したいので、resize時のみ再構築(通常は加算のみ) */
-  }
-  resize();
-  addEventListener('resize', resize, {passive:true});
-
-  function addFrostPass(){
-    if(reduced || document.hidden || calmMode){ return; }
-    const isDay = document.documentElement.getAttribute('data-theme') === 'day';
-    if(isDay){
-      /* 昼: 水滴が数粒ずつ結ぶ(雨上がりの窓)。水滴はハイライト付きの粒 */
-      for(let i=0;i<3;i++){
-        const x = Math.random()*cv.width, y = Math.random()*cv.height;
-        const r = 2 + Math.random()*5;
-        cx.save();
-        cx.globalCompositeOperation = 'source-over';
-        cx.globalAlpha = .5;
-        cx.beginPath(); cx.arc(x,y,r,0,7);
-        cx.fillStyle = 'rgba(190,225,245,.5)'; cx.fill();
-        cx.beginPath(); cx.arc(x-r*.3,y-r*.35,r*.32,0,7);
-        cx.fillStyle = 'rgba(255,255,255,.85)'; cx.fill();
-        cx.restore();
-      }
-      return;
-    }
-    if(ticks >= MAX_TICKS) return;
-    ticks++;
-    const w = cv.width, h = cv.height;
-    cx.save();
-    cx.globalCompositeOperation = 'source-over';
-    cx.globalAlpha = TICK_ALPHA;
-    const g = cx.createRadialGradient(w/2,h/2, Math.min(w,h)*0.35, w/2,h/2, Math.max(w,h)*0.75);
-    g.addColorStop(0, 'rgba(220,235,250,0)');
-    g.addColorStop(0.7, 'rgba(220,235,250,0.5)');
-    g.addColorStop(1, 'rgba(220,235,250,0.9)');
-    cx.fillStyle = g;
-    cx.fillRect(0,0,w,h);
-    cx.restore();
-  }
-  const frostInterval = setInterval(addFrostPass, TICK_MS);
-
-  /* カーソルでなぞると拭える */
-  let lastWipe = {x:-9999,y:-9999};
-  addEventListener('pointermove', (e)=>{
-    if(reduced) return;
-    const dx = e.clientX-lastWipe.x, dy = e.clientY-lastWipe.y;
-    if(Math.hypot(dx,dy) < 4) return;
-    lastWipe = {x:e.clientX, y:e.clientY};
-    cx.save();
-    cx.globalCompositeOperation = 'destination-out';
-    const wg = cx.createRadialGradient(e.clientX,e.clientY,0, e.clientX,e.clientY,46);
-    wg.addColorStop(0,'rgba(0,0,0,.9)');
-    wg.addColorStop(1,'rgba(0,0,0,0)');
-    cx.fillStyle = wg;
-    cx.beginPath(); cx.arc(e.clientX,e.clientY,46,0,7); cx.fill();
-    cx.restore();
-  }, {passive:true});
-
-  document.addEventListener('visibilitychange', ()=>{
-    if(document.hidden) clearInterval(frostInterval);
-  });
-})();
 
 /* ============ タブが非表示ならアニメを止める(省電力) ============ */
 document.addEventListener('visibilitychange', ()=>{
