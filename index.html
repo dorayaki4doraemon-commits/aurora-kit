@@ -58,7 +58,6 @@
 
   --font-d:'Jost',sans-serif;
   --font-b:'M PLUS Rounded 1c',sans-serif;
-  --font-c:'Share Tech Mono',monospace;
 
   /* ── タイポグラフィの物語 ──────────────────────────
      復刻書体(EB Garamond / Zen Old Mincho)は、何百年も前の活字の
@@ -521,6 +520,15 @@ h1 b{font-weight:600;font-style:italic;
 }
 .reflect-btn:focus-visible{outline:1px solid var(--jelly);outline-offset:3px}
 
+/* 破壊的操作: 色ではなく形状(両角が欠けた氷)+二段階確認で重さを示す */
+.destructive-btn{border-radius:26px 5px 26px 5px}
+.destructive-btn.confirming{animation:destrshiver .5s ease}
+@keyframes destrshiver{
+  0%,100%{transform:translateX(0)}
+  25%{transform:translateX(-2px)}
+  75%{transform:translateX(2px)}
+}
+
 /* 波紋(hoverで一度だけ) */
 .ripple-host{position:relative}
 .ripple-host .rp{position:absolute;inset:0;border-radius:inherit;pointer-events:none;
@@ -546,6 +554,31 @@ h1 b{font-weight:600;font-style:italic;
   background:linear-gradient(180deg,rgba(255,255,255,.9),transparent)}
 .oc b{font-size:.76rem;display:block;color:var(--text);font-weight:500}
 .oc code{font-size:.65rem;font-family:var(--font-data);color:var(--dim);font-variant-numeric:tabular-nums;letter-spacing:.03em}
+
+/* ============================================================
+   Layout Patterns — 既存パネルの並べ方の実例(新規コンポーネントではない)
+   ============================================================ */
+.layout-2col{display:grid;grid-template-columns:2fr 1fr;gap:20px}
+@media (max-width:680px){.layout-2col{grid-template-columns:1fr}}
+.layout-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-top:20px}
+.mini-pane{border-radius:18px 18px 14px 14px;padding:18px 20px;
+  background:linear-gradient(180deg,var(--pane-bg-top) 0%,var(--pane-bg-btm) 100%);
+  border:1px solid var(--pane-line-in)}
+.mini-pane h4{font-family:var(--font-head);font-style:italic;font-weight:600;font-size:.95rem;color:var(--moonsilver);margin-bottom:6px}
+.mini-pane p{font-size:.78rem;color:var(--dim);line-height:1.7}
+
+/* ============================================================
+   Typography — 4つの光(フォントトークンの見本)
+   ============================================================ */
+.type-list{display:flex;flex-direction:column;gap:20px}
+.type-row{display:flex;align-items:baseline;gap:24px;flex-wrap:wrap;
+  padding-bottom:18px;border-bottom:1px dashed rgba(143,216,255,.16)}
+.type-row:last-child{border-bottom:none;padding-bottom:0}
+.type-sample{font-size:1.5rem;color:var(--text);flex:2;min-width:220px}
+.type-meta{display:flex;flex-direction:column;gap:3px;flex:1;min-width:180px}
+.type-meta b{font-family:var(--font-data);font-size:.72rem;letter-spacing:.08em;color:var(--teal)}
+.type-meta code{font-family:var(--font-data);font-size:.68rem;color:var(--dim)}
+.type-meta span{font-size:.72rem;color:var(--dim);font-family:var(--font-b);line-height:1.5}
 
 /* ============================================================
    光子の家計簿(Bioluminalの経済思想をAuroraへ輸入)
@@ -609,6 +642,23 @@ body.calm .refract-layer,body.calm .specular-layer,body.calm .frostmicro-layer{d
 .toggle input:checked + .tr::after{transform:translateX(30px);
   background:radial-gradient(circle at 34% 30%,#eafff8 0%,var(--teal) 60%,#0a7a5c 100%)}
 .toggle input:focus-visible + .tr{outline:1px solid var(--jelly);outline-offset:3px}
+
+/* ============================================================
+   進行中(脈動/揺らぎ) — 光の文法§7の「進行中」動詞。
+   クラゲの呼吸(bellpulse/--ease-contract)と同じ律動を再利用する。
+   ============================================================ */
+.loader-breath{
+  display:inline-block;width:20px;height:20px;border-radius:50%;flex:none;
+  background:radial-gradient(circle at 35% 30%,#fff 0%,var(--teal) 70%);
+  box-shadow:0 0 10px var(--teal);
+  animation:loaderbreath var(--breath) var(--ease-contract) infinite;
+}
+@keyframes loaderbreath{
+  0%{transform:scale(1);opacity:.5}
+  18%{transform:scale(.8);opacity:.9}
+  38%{transform:scale(1.08);opacity:.6}
+  100%{transform:scale(1);opacity:.5}
+}
 
 .prog{flex:1;min-width:210px;height:18px;border-radius:11px;overflow:hidden;
   background:#050f1a;border:1px solid rgba(143,216,255,.3);
@@ -763,6 +813,20 @@ footer{position:relative;z-index:1;text-align:center;padding:22px;background:#02
 [data-theme="day"] .notif.err{border-color:rgba(110,124,136,.5)}
 [data-theme="day"] .notif.err .t{color:#5a6a76}
 
+/* --- 氷晶/反射ボタンは背景が固定の濃紺のままだったため、
+     昼のvar(--text)(暗紺)が地に沈んで読めなくなっていた。
+     背景そのものを昼の明るいガラスへ反転させて解消する --- */
+[data-theme="day"] .ice-btn{
+  background:
+    linear-gradient(115deg,rgba(10,92,168,.14) 0%,rgba(10,92,168,.02) 38%,rgba(10,92,168,.1) 39%,rgba(10,92,168,.02) 70%,rgba(10,92,168,.08) 71%),
+    linear-gradient(180deg,#eef8ff,#d2ecfc);
+  box-shadow:inset 0 0 0 1px rgba(10,92,168,.35)}
+[data-theme="day"] .ice-btn:hover{color:#062a4a;
+  box-shadow:inset 0 0 0 1px rgba(10,92,168,.65),inset 0 0 22px rgba(10,92,168,.15)}
+[data-theme="day"] .reflect-btn{
+  background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(222,242,255,.85));
+  border-color:rgba(10,92,168,.3)}
+
 /* --- hover=水滴が結ぶ(分光フリンジ) --- */
 [data-theme="day"] .reflect-btn:hover,[data-theme="day"] .reflect-btn.tap-fx{
   box-shadow:
@@ -887,6 +951,21 @@ button:disabled,.lure-btn:disabled,.ghost-btn:disabled{
   font-family:var(--font-data);letter-spacing:.06em}
 .field.has-error .err-msg{display:block}
 .field.has-error label{color:#f0a8a8}
+
+/* ============================================================
+   通知/ステータス — 光の文法§7「明滅=呼びかけ」「常灯/翳り=異常専用」
+   ============================================================ */
+.notif{display:inline-flex;align-items:center;gap:10px;padding:9px 16px;border-radius:999px;
+  background:rgba(4,12,22,.7);border:1px solid rgba(143,216,255,.28);
+  font-family:var(--font-b);font-size:.82rem;color:var(--text)}
+.status-dot{width:8px;height:8px;border-radius:50%;flex:none;display:inline-block}
+.status-dot.blink-slow{background:var(--teal);box-shadow:0 0 6px var(--teal);animation:blinkslow var(--breath) step-end infinite}
+.status-dot.blink-fast{background:var(--teal);box-shadow:0 0 6px var(--teal);animation:blinkfast calc(var(--breath)/4) step-end infinite}
+@keyframes blinkslow{0%,84%,100%{opacity:1}92%{opacity:.15}}
+@keyframes blinkfast{0%,100%{opacity:1}50%{opacity:.15}}
+.notif.err{border-color:rgba(216,64,64,.4)}
+.notif.err .t{color:#f0a8a8}
+.steady{background:#d84040;box-shadow:0 0 8px rgba(216,64,64,.6);animation:none}
 
 /* skip link (a11y) */
 .skip-link{position:fixed;left:8px;top:-60px;z-index:99;padding:10px 18px;
@@ -1043,9 +1122,11 @@ body.tab-hidden .refract-layer,body.tab-hidden .specular-layer,body.tab-hidden .
   <a href="#sec-philosophy" data-sec="sec-philosophy"><span class="tip">借りた光</span></a>
   <a href="#sec-buttons" data-sec="sec-buttons"><span class="tip">Buttons</span></a>
   <a href="#sec-palette" data-sec="sec-palette"><span class="tip">Palette</span></a>
+  <a href="#sec-type" data-sec="sec-type"><span class="tip">Typography</span></a>
   <a href="#sec-ledger" data-sec="sec-ledger"><span class="tip">光子の家計簿</span></a>
   <a href="#sec-glass" data-sec="sec-glass"><span class="tip">Glass</span></a>
   <a href="#sec-controls" data-sec="sec-controls"><span class="tip">Controls</span></a>
+  <a href="#sec-layout" data-sec="sec-layout"><span class="tip">Layout</span></a>
   <a href="#sec-lake" data-sec="sec-lake"><span class="tip">湖</span></a>
 </nav>
 
@@ -1312,17 +1393,17 @@ body.tab-hidden .refract-layer,body.tab-hidden .specular-layer,body.tab-hidden .
       <div class="phi">
         <span class="rule">RULE 01</span>
         <h3>発光はCTAの特権</h3>
-        <p>呼吸するように光っていいのは蛍型CTAだけ。1画面に1つ。それ以外の要素が自家発光していたら実装ミス。</p>
+        <p><span class="night-only">呼吸するように光っていいのは蛍型CTAだけ。1画面に1つ。それ以外の要素が自家発光していたら実装ミス。</span><span class="day-only">呼吸するように光っていいのは錦鯉型CTAだけ。1画面に1つ。それ以外の要素が自家発光していたら実装ミス。</span></p>
       </div>
       <div class="phi">
         <span class="rule">RULE 02</span>
-        <h3>hoverは反射</h3>
-        <p>触れたとき要素は「光る」のではなく「月光を反射する」。銀色のスペキュラが表面を一度だけ滑り、縁に息の結露がひと呼吸滲む。</p>
+        <h3><span class="night-only">hoverは反射</span><span class="day-only">hoverは分光</span></h3>
+        <p><span class="night-only">触れたとき要素は「光る」のではなく「月光を反射する」。銀色のスペキュラが表面を一度だけ滑り、縁に息の結露がひと呼吸滲む。</span><span class="day-only">触れたとき要素は「光る」のではなく「水を通った証拠」を帯びる。分光フリンジ(赤/紫の縁)が表面を一度だけ滑り、縁に水滴の結露がひと呼吸残る。</span></p>
       </div>
       <div class="phi">
         <span class="rule">RULE 03</span>
-        <h3>影は青い</h3>
-        <p>夜気は冷たい。落ち影は黒ではなく、夜の青緑を混ぜた冷たい影。フォーカスリングも銀(月光)で示す。</p>
+        <h3><span class="night-only">影は青い</span><span class="day-only">影は太陽が動かす</span></h3>
+        <p><span class="night-only">夜気は冷たい。落ち影は黒ではなく、夜の青緑を混ぜた冷たい影。フォーカスリングも銀(月光)で示す。</span><span class="day-only">影は太陽の高さで向きを変える。落ち影は黒ではなく、水を含んだ空気の冷たい影。フォーカスリングは露の銀(Dewsilver)で示す。</span></p>
       </div>
     </div>
   </div>
@@ -1331,21 +1412,28 @@ body.tab-hidden .refract-layer,body.tab-hidden .specular-layer,body.tab-hidden .
 <!-- ============ ボタン 2.0 ============ -->
 <div class="pane" id="sec-buttons">
   <div class="panel">
-    <h2 class="sec-label"><span class="node"></span><span class="line"></span>Buttons 2.0 — 氷と月暈と蛍</h2>
+    <h2 class="sec-label"><span class="node"></span><span class="line"></span>Buttons 2.0 — <span class="night-only">氷と月暈と蛍</span><span class="day-only">氷と陽暈と錦鯉</span></h2>
+    <p style="margin:-8px 0 22px;font-size:.72rem;color:var(--dim);font-family:var(--font-data);letter-spacing:.03em">
+      ROLE MAP — <span class="night-only">蛍型</span><span class="day-only">錦鯉型</span>=Primary / 欠けた氷=Secondary / 氷晶ファセット=Tertiary・Utility / <span class="night-only">月暈</span><span class="day-only">陽暈</span>=重要度バッジ付きCTA
+    </p>
     <div class="row" style="margin-bottom:26px">
-      <button class="cta-firefly">今夜をはじめる</button>
-      <span class="btn-note">← 蛍型CTA。尾に発光器。唯一の自家発光</span>
+      <button class="cta-firefly"><span class="night-only">今夜をはじめる</span><span class="day-only">この一日をはじめる</span></button>
+      <span class="btn-note"><span class="night-only">← 蛍型CTA。尾に発光器。唯一の自家発光</span><span class="day-only">← 錦鯉型CTA。緋の斑が発光器の役割。唯一の自家発光</span></span>
     </div>
     <div class="row" style="margin-bottom:26px">
       <button class="ice-btn">氷晶ファセット</button>
       <button class="reflect-btn ripple-host">欠けた氷 × 反射<span class="sheen"></span><span class="rp"></span></button>
-      <span class="btn-note">← 六角の切子面 / 片角だけ鋭いスクワークル。hoverで月光が滑る+霜がひと呼吸</span>
+      <span class="btn-note"><span class="night-only">← 六角の切子面 / 片角だけ鋭いスクワークル。hoverで月光が滑る+霜がひと呼吸</span><span class="day-only">← 六角の切子面 / 片角だけ鋭いスクワークル。hoverで陽光が水面に滑る+水滴がひと呼吸結ぶ</span></span>
     </div>
     <div class="row">
       <button class="halo-btn halo-1">通常</button>
       <button class="halo-btn halo-2">重要</button>
       <button class="halo-btn halo-3">最重要</button>
-      <span class="btn-note">← 月暈リング。重要度が高いほど暈が大きい</span>
+      <span class="btn-note"><span class="night-only">← 月暈リング。重要度が高いほど暈が大きい</span><span class="day-only">← 陽暈リング。重要度が高いほど暈が大きい</span></span>
+    </div>
+    <div class="row" style="margin-top:26px">
+      <button class="reflect-btn ripple-host destructive-btn" id="destructiveBtn" type="button"><span class="lbl">観測ログを削除</span><span class="sheen"></span><span class="rp"></span></button>
+      <span class="btn-note">← 破壊的操作。禁則(赤はエラー専用)のため色では区別せず、両角が欠けた氷の形+二段階確認(もう一度押すと実行)で重さを示す</span>
     </div>
   </div>
 </div>
@@ -1384,6 +1472,47 @@ body.tab-hidden .refract-layer,body.tab-hidden .specular-layer,body.tab-hidden .
   </div>
 </div>
 
+<!-- ============ タイポグラフィ(4つの光) ============ -->
+<div class="pane" id="sec-type">
+  <div class="panel">
+    <h2 class="sec-label"><span class="node"></span><span class="line"></span>Typography — 4つの光</h2>
+    <div class="type-list">
+      <div class="type-row">
+        <div class="type-sample" style="font-family:var(--font-head)">Borrowed Light</div>
+        <div class="type-meta">
+          <b>--font-head</b>
+          <code>EB Garamond / Zen Old Mincho</code>
+          <span>借りた光 — h1・フィロソフィー見出し</span>
+        </div>
+      </div>
+      <div class="type-row">
+        <div class="type-sample" style="font-family:var(--font-b)">今この瞬間の光</div>
+        <div class="type-meta">
+          <b>--font-b</b>
+          <code>M PLUS Rounded 1c</code>
+          <span>本文・UI標準</span>
+        </div>
+      </div>
+      <div class="type-row">
+        <div class="type-sample" style="font-family:var(--font-cta)"><span class="night-only">今夜をはじめる</span><span class="day-only">この一日をはじめる</span></div>
+        <div class="type-meta">
+          <b>--font-cta</b>
+          <code>Mochiy Pop One</code>
+          <span>自家発光 — CTAのみに許された唯一の独立書体</span>
+        </div>
+      </div>
+      <div class="type-row">
+        <div class="type-sample" style="font-family:var(--font-data);font-variant-numeric:tabular-nums;letter-spacing:.04em">43.06°N, 141.35°E</div>
+        <div class="type-meta">
+          <b>--font-data</b>
+          <code>Share Tech Mono</code>
+          <span>観測記録 — 座標・数値・ラベル(等幅数字必須)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ============ 光子の家計簿(発光経済との統合) ============ -->
 <div class="pane" id="sec-ledger">
   <div class="panel">
@@ -1419,7 +1548,7 @@ body.tab-hidden .refract-layer,body.tab-hidden .specular-layer,body.tab-hidden .
   <div class="specular-layer" aria-hidden="true"><svg viewBox="0 0 400 260" preserveAspectRatio="none"><rect x="2" y="2" width="396" height="256" rx="24" fill="#dff4ff" filter="url(#lensSpecular)"/></svg></div>
   <div class="frostmicro-layer" aria-hidden="true"></div>
   <div class="panel">
-    <h2 class="sec-label"><span class="node"></span><span class="line"></span>Glass 2.1 — このパネル自体が見本(屈折+月と連動する反射)</h2>
+    <h2 class="sec-label"><span class="node"></span><span class="line"></span>Glass 2.1 — このパネル自体が見本(屈折+<span class="night-only">月と連動する反射</span><span class="day-only">陽と連動する反射</span>)</h2>
     <div class="philosophy">
       <div class="phi"><span class="rule">EDGE</span><h3>色収差</h3>
         <p>パネル左縁にシアン、右縁にバイオレットの1.5pxが滲む。厚みのあるガラスの縁で光が分光する現象。</p></div>
@@ -1427,8 +1556,8 @@ body.tab-hidden .refract-layer,body.tab-hidden .specular-layer,body.tab-hidden .
         <p>上角30px・下角22px。水面に浮くものは上が緩み、下が締まる。内側5pxに第二の縁=ガラスの厚み。</p></div>
       <div class="phi"><span class="rule">REFRACT</span><h3>本物の屈折(feDisplacementMap)</h3>
         <p>背後のオーロラは透けるだけでなく、実際に歪んで見える。グラデーションではなくピクセル単位の変位計算。</p></div>
-      <div class="phi"><span class="rule">LIGHT</span><h3>光源は、本物の月</h3>
-        <p>ハイライトは固定グラデーションではなく feSpecularLighting による光源計算。光源座標はこのページの月の実際の運行(スクロール位置)にそのまま接続されている — 月が高く昇るほど反射は上寄りに、月が沈むほど反射は流れる。</p></div>
+      <div class="phi"><span class="rule">LIGHT</span><h3><span class="night-only">光源は、本物の月</span><span class="day-only">光源は、本物の陽</span></h3>
+        <p><span class="night-only">ハイライトは固定グラデーションではなく feSpecularLighting による光源計算。光源座標はこのページの月の実際の運行(スクロール位置)にそのまま接続されている — 月が高く昇るほど反射は上寄りに、月が沈むほど反射は流れる。</span><span class="day-only">ハイライトは固定グラデーションではなく feSpecularLighting による光源計算。光源座標はこのページの太陽の実際の高度(スクロール位置)にそのまま接続されている — 陽が高く昇るほど反射は上寄りに、陽が傾くほど反射は流れる。</span></p></div>
     </div>
   </div>
 </div>
@@ -1440,12 +1569,17 @@ body.tab-hidden .refract-layer,body.tab-hidden .specular-layer,body.tab-hidden .
     <div class="row" style="margin-bottom:24px">
       <label class="toggle"><input type="checkbox" checked aria-label="トグル — オン状態の見本"><span class="tr"></span></label>
       <label class="toggle"><input type="checkbox" aria-label="トグル — オフ状態の見本"><span class="tr"></span></label>
-      <div class="prog" role="progressbar" aria-valuenow="64" aria-valuemin="0" aria-valuemax="100" aria-label="同期の進行状況"><div class="fill"></div></div>
+      <div class="prog ripple-host" role="progressbar" aria-valuenow="64" aria-valuemin="0" aria-valuemax="100" aria-label="同期の進行状況" id="progDemo"><div class="fill"></div><span class="rp"></span></div>
+    </div>
+    <div class="row" style="margin-bottom:24px">
+      <span class="loader-breath" aria-hidden="true"></span>
+      <button class="reflect-btn" id="progSyncBtn" type="button">同期を完了する</button>
+      <span class="btn-note">← 進行中(脈動/揺らぎ)と完了(一度だけの波紋)。独自の光り方は発明せず、クラゲの呼吸と波紋を流用</span>
     </div>
     <div class="row">
       <div class="field"><label for="f1">呼び名</label>
         <input class="inp" id="f1" type="text" placeholder="よづき"></div>
-      <div class="field"><label for="f2">今夜の座標</label>
+      <div class="field"><label for="f2"><span class="night-only">今夜の座標</span><span class="day-only">本日の座標</span></label>
         <input class="inp" id="f2" type="text" style="font-family:var(--font-data);font-variant-numeric:tabular-nums;letter-spacing:.04em" placeholder="43.06°N, 141.35°E"></div>
     </div>
     <div class="row" style="margin-top:24px">
@@ -1454,9 +1588,46 @@ body.tab-hidden .refract-layer,body.tab-hidden .specular-layer,body.tab-hidden .
       <div class="field has-error" style="max-width:240px">
         <label for="f3">観測者コード</label>
         <input class="inp error" id="f3" type="text" value="OBS-✕✕✕✕" aria-invalid="true" aria-describedby="f3err">
-        <span class="err-msg" id="f3err">▲ 常灯=異常。この形式は登録されていません</span>
+        <span class="err-msg" id="f3err"><span class="night-only">▲ 常灯=異常。この形式は登録されていません</span><span class="day-only">▲ 翳り=異常。この形式は登録されていません</span></span>
       </div>
-      <span class="btn-note">← 状態の網羅: disabled(光る資格の一時停止)と error(唯一の常灯)</span>
+      <span class="btn-note"><span class="night-only">← 状態の網羅: disabled(光る資格の一時停止)と error(唯一の常灯)</span><span class="day-only">← 状態の網羅: disabled(光る資格の一時停止)と error(唯一の翳り)</span></span>
+    </div>
+    <div class="row" style="margin-top:24px">
+      <div class="notif">
+        <span class="status-dot blink-slow" aria-hidden="true"></span>
+        <span class="t">新しい観測データがあります</span>
+      </div>
+      <div class="notif">
+        <span class="status-dot blink-fast" aria-hidden="true"></span>
+        <span class="t">まもなく観測が終了します</span>
+      </div>
+      <div class="notif err">
+        <span class="status-dot steady" aria-hidden="true"></span>
+        <span class="t">同期に失敗しました</span>
+      </div>
+      <span class="btn-note">← 明滅(呼びかけ。周波数=緊急度)と<span class="night-only">常灯</span><span class="day-only">翳り</span>(異常専用)。エラー以外を常時ハイライトしない</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ レイアウト実例(パネルの並べ方) ============ -->
+<div class="pane" id="sec-layout">
+  <div class="panel">
+    <h2 class="sec-label"><span class="node"></span><span class="line"></span>Layout Patterns — パネルの並べ方</h2>
+    <div class="layout-2col">
+      <div class="mini-pane">
+        <h4>本文カラム</h4>
+        <p>ガラスパネルは縦積みだけでなく、2カラムのフォーム+サイドバー構成にも並べられる。左を2fr、右を1frに。</p>
+      </div>
+      <div class="mini-pane">
+        <h4>サイドバー</h4>
+        <p>補足情報・メタデータ・観測ログなど、幅の狭い付随情報をここに置く。</p>
+      </div>
+    </div>
+    <div class="layout-cards">
+      <div class="mini-pane"><h4>カード A</h4><p>ダッシュボードのようにミニパネルを敷き詰める並べ方の例。</p></div>
+      <div class="mini-pane"><h4>カード B</h4><p>幅は auto-fill で可変。狭い画面では自動的に折り返る。</p></div>
+      <div class="mini-pane"><h4>カード C</h4><p>中身は既存コンポーネント(ボタン・トグル等)を自由に組み合わせられる。</p></div>
     </div>
   </div>
 </div>
@@ -1568,6 +1739,15 @@ function onScroll(){
 
   /* 月の錯視: 地平線(湖)に近いほど見出しがわずかに大きく */
   document.documentElement.style.setProperty('--illusion', (1 + p*0.1).toFixed(4));
+
+  /* Rainbow Mode: 夜のオーロラ視差と対になる、昼側のスクロール=時間経過。
+     下端(湖=水たまり)に近づくほど雨上がりの湿った空気が濃くなる。 */
+  const daySky = document.getElementById('daySky');
+  if(daySky){
+    daySky.style.transform = `translateY(${scrollY * 0.08}px)`;
+    const glow = daySky.querySelector('.airglow');
+    if(glow) glow.style.opacity = (0.5 + p * 0.4).toFixed(2);
+  }
 }
 addEventListener('scroll', onScroll, {passive:true});
 onScroll();
@@ -1707,6 +1887,55 @@ document.querySelectorAll('.ripple-host').forEach(b=>{
     b.classList.remove('fired'); void b.offsetWidth; b.classList.add('fired');
   });
 });
+
+/* ============ 破壊的操作: 二段階確認(色ではなく形状+タイミングで示す) ============ */
+(function destructiveConfirm(){
+  const btn = document.getElementById('destructiveBtn');
+  if(!btn) return;
+  const lbl = btn.querySelector('.lbl');
+  const original = lbl.textContent;
+  let armed = false, timer = null;
+  btn.addEventListener('click', ()=>{
+    if(!armed){
+      armed = true;
+      lbl.textContent = 'もう一度押すと削除';
+      btn.classList.remove('confirming'); void btn.offsetWidth; btn.classList.add('confirming');
+      timer = setTimeout(()=>{ armed = false; lbl.textContent = original; }, 4000);
+    }else{
+      clearTimeout(timer);
+      armed = false;
+      lbl.textContent = '削除しました';
+      btn.disabled = true;
+      setTimeout(()=>{ lbl.textContent = original; btn.disabled = false; }, 2000);
+    }
+  });
+})();
+
+/* ============ 進行中→完了(光の文法§7のデモ) ============ */
+(function progressDemo(){
+  const btn = document.getElementById('progSyncBtn');
+  const prog = document.getElementById('progDemo');
+  if(!btn || !prog) return;
+  const fill = prog.querySelector('.fill');
+  let busy = false;
+  btn.addEventListener('click', ()=>{
+    if(busy) return;
+    busy = true;
+    btn.disabled = true;
+    fill.style.width = '100%';
+    prog.setAttribute('aria-valuenow','100');
+    setTimeout(()=>{
+      /* 完了: 一度だけの波紋(独自の光り方は発明しない) */
+      prog.classList.remove('fired'); void prog.offsetWidth; prog.classList.add('fired');
+      setTimeout(()=>{
+        fill.style.width = '64%';
+        prog.setAttribute('aria-valuenow','64');
+        btn.disabled = false;
+        busy = false;
+      }, 1400);
+    }, 700);
+  });
+})();
 
 /* ============ 湖に石を投げる ============ */
 const lakeEl = document.querySelector('.lake');
