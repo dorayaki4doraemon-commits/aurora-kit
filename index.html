@@ -473,7 +473,7 @@ h1 b{font-weight:600;font-style:italic;
 /* --- 月暈リング(重要度=輪の大きさ) --- */
 .halo-btn{
   position:relative;font-family:var(--font-b);font-weight:500;font-size:.88rem;
-  color:var(--moonsilver);padding:12px 30px;cursor:pointer;
+  color:var(--text);padding:12px 30px;cursor:pointer;
   border-radius:999px;                         /* フォールバック: pill */
   background:linear-gradient(180deg,#16283a,#0a1826);
   border:1px solid rgba(200,212,220,.4);
@@ -482,13 +482,19 @@ h1 b{font-weight:600;font-style:italic;
 @supports (corner-shape: superellipse(4)){
   .halo-btn{ border-radius:22px; corner-shape:superellipse(4.5); }
 }
+/* 重要度は暈の大きさではなく明瞭さ(不透明度)で示す。
+   サイズを揺らす表現は撤回し、リングの大きさは3段階とも固定 */
 .halo-btn::before{content:"";position:absolute;border-radius:inherit;pointer-events:none;
-  border:1px solid rgba(200,212,220,.22);inset:calc(var(--halo,8px)*-1);
-  transition:inset .4s ease, border-color .4s}
+  border:1px solid rgba(200,212,220,.5);inset:-10px;
+  opacity:var(--halo-op,.35);
+  transition:opacity .4s ease, border-color .4s, box-shadow .4s}
 .halo-btn:hover{border-color:rgba(200,212,220,.8)}
-.halo-btn:hover::before{inset:calc((var(--halo,8px) + 4px)*-1);border-color:rgba(200,212,220,.4)}
+.halo-btn:hover::before{opacity:calc(var(--halo-op,.35) + .25)}
 .halo-btn:focus-visible{outline:1px solid var(--moonsilver);outline-offset:4px}
-.halo-1{--halo:6px}.halo-2{--halo:11px}.halo-3{--halo:17px}
+.halo-1{--halo-op:.2}
+.halo-2{--halo-op:.55}
+.halo-3{--halo-op:1}
+.halo-3::before{box-shadow:0 0 9px rgba(200,212,220,.4)}
 
 /* --- 欠けた氷のスクワークル + 反射ボタン(借りた光) --- */
 .reflect-btn{
@@ -829,6 +835,19 @@ footer{position:relative;z-index:1;text-align:center;padding:22px;background:#02
 [data-theme="day"] .reflect-btn{
   background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(222,242,255,.85));
   border-color:rgba(10,92,168,.3)}
+/* 同じ理由(背景固定+文字色だけ反転)で読めなくなっていた箇所をまとめて解消 */
+[data-theme="day"] .phi{background:rgba(255,255,255,.55);border-color:rgba(10,92,168,.16)}
+[data-theme="day"] .inp{background:linear-gradient(180deg,#fbfeff,#e6f4ff);border-color:rgba(10,92,168,.32)}
+[data-theme="day"] .inp::placeholder{color:#6f93b0}
+[data-theme="day"] .inp:focus{border-color:rgba(10,92,168,.6);box-shadow:0 0 14px -4px rgba(10,92,168,.35)}
+[data-theme="day"] .notif{background:rgba(255,255,255,.72);border-color:rgba(10,92,168,.2)}
+[data-theme="day"] .halo-btn{background:linear-gradient(180deg,#ffffff,#e2f2ff);border-color:rgba(10,92,168,.32)}
+[data-theme="day"] .halo-btn::before{border-color:rgba(10,92,168,.18)}
+[data-theme="day"] .halo-btn:hover{border-color:rgba(10,92,168,.7)}
+[data-theme="day"] .halo-btn:hover::before{border-color:rgba(10,92,168,.32)}
+[data-theme="day"] footer{background:#dceefc}
+[data-theme="day"] .mode-toggle{background:rgba(255,255,255,.75);border-color:rgba(10,92,168,.28)}
+[data-theme="day"] .mode-toggle:hover{border-color:rgba(8,107,80,.5)}
 
 /* --- hover=水滴が結ぶ(分光フリンジ) --- */
 [data-theme="day"] .reflect-btn:hover,[data-theme="day"] .reflect-btn.tap-fx{
@@ -1415,7 +1434,7 @@ body.tab-hidden .refract-layer,body.tab-hidden .specular-layer,body.tab-hidden .
   <div class="panel">
     <h2 class="sec-label"><span class="node"></span><span class="line"></span>Buttons 2.0 — <span class="night-only">氷と月暈と蛍</span><span class="day-only">氷と陽暈と錦鯉</span></h2>
     <p style="margin:-8px 0 22px;font-size:.72rem;color:var(--dim);font-family:var(--font-data);letter-spacing:.03em">
-      ROLE MAP — <span class="night-only">蛍型</span><span class="day-only">錦鯉型</span>=Primary / 欠けた氷=Secondary / 氷晶ファセット=Tertiary・Utility / <span class="night-only">月暈</span><span class="day-only">陽暈</span>=重要度バッジ付きCTA
+      ROLE MAP — <span class="night-only">蛍型</span><span class="day-only">錦鯉型</span>=Primary / 欠けた氷=Secondary / 氷晶ファセット=Tertiary・Utility / <span class="night-only">月暈</span><span class="day-only">陽暈</span>=重要度バッジ付きCTA(暈の明瞭さで段階を示す)
     </p>
     <div class="row" style="margin-bottom:26px">
       <button class="cta-firefly"><span class="night-only">今夜をはじめる</span><span class="day-only">この一日をはじめる</span></button>
@@ -1430,7 +1449,7 @@ body.tab-hidden .refract-layer,body.tab-hidden .specular-layer,body.tab-hidden .
       <button class="halo-btn halo-1">通常</button>
       <button class="halo-btn halo-2">重要</button>
       <button class="halo-btn halo-3">最重要</button>
-      <span class="btn-note"><span class="night-only">← 月暈リング。重要度が高いほど暈が大きい</span><span class="day-only">← 陽暈リング。重要度が高いほど暈が大きい</span></span>
+      <span class="btn-note"><span class="night-only">← 月暈リング。重要度が高いほど暈が明瞭になる(大きさは固定)</span><span class="day-only">← 陽暈リング。重要度が高いほど暈が明瞭になる(大きさは固定)</span></span>
     </div>
     <div class="row" style="margin-top:26px">
       <button class="reflect-btn ripple-host destructive-btn" id="destructiveBtn" type="button"><span class="lbl">観測ログを削除</span><span class="sheen"></span><span class="rp"></span></button>

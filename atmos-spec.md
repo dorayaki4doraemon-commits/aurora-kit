@@ -184,7 +184,7 @@ CSS側は `[data-theme="day"] { --teal: #086B50; ... }` で該当トークンを
 |---|---|---|
 | `.cta-firefly` | 尾を持つ雫(左下角のみ9px) | default / hover(scale1.045) / active(scale.98) / **disabled**(発光停止+彩度40%) |
 | `.ice-btn` | 六角ファセット(`clip-path`) | default / hover(縁強調) / active |
-| `.halo-btn` | pill+外周リング。`--halo`で3段階(6/11/17px) | hoverで暈が拡大 |
+| `.halo-btn` | pill+外周リング(サイズ固定)。`--halo-op`で3段階の明瞭さ(.2/.55/1) | hoverで暈がやや明瞭化 |
 | `.reflect-btn` | 欠けた氷(一角のみ5px) | hover/タップ: sheen+frost+波紋(`.ripple-host`) |
 
 **disabled規約**: `opacity:.38` + アニメーション全停止 + `cursor:not-allowed` + `filter:saturate(.4)`。「光る資格の一時停止」の表現として統一する。
